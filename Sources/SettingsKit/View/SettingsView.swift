@@ -46,7 +46,7 @@ public final class SettingsView: UIViewController {
     public override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.backgroundColor = .systemOrange
+//        view.backgroundColor = .systemOrange
         
         view.addSubview(tableView)
 //        self.navigationController?.isNavigationBarHidden = false
@@ -241,6 +241,7 @@ extension SettingsView: UITableViewDataSource {
     
     public func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let headerView = UIView(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: Constants.headerHeight))
+        headerView.backgroundColor = .white
         
         let label = UILabel(frame: CGRect(x: 16, y: 0, width: view.bounds.width-20, height:  Constants.headerHeight))
         label.text = settingsSections[section].title
