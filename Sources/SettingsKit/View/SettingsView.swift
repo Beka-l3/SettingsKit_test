@@ -1,12 +1,20 @@
-
 import UIKit
 import SafariServices
+import StoreKit
 import Foundation
+import DonationKit
+//import NotificationKit
 
+public protocol SettingsViewDelegate: AnyObject {
+    func openDonateProposition()
+}
 
 
 public final class SettingsView: UIViewController {
     private var settingsSections: [SettingsSection]
+    public var settingsViewDelegate: SettingsViewDelegate?
+    
+    private var analytics: SettingsAnalytics?
     
     private struct Constants {
         static let cellHeight: CGFloat = 81
@@ -34,8 +42,10 @@ public final class SettingsView: UIViewController {
     
     
     
-    init(settingsSections: [SettingsSection]) {
+    init(settingsSections: [SettingsSection], analytics: SettingsAnalytics?) {
         self.settingsSections = settingsSections
+        self.analytics = analytics
+        
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -46,10 +56,7 @@ public final class SettingsView: UIViewController {
     public override func viewDidLoad() {
         super.viewDidLoad()
         
-//        view.backgroundColor = .systemOrange
-        
         view.addSubview(tableView)
-//        self.navigationController?.isNavigationBarHidden = false
         applyConstraints()
         reloadData()
     }
@@ -98,37 +105,10 @@ public final class SettingsView: UIViewController {
     }
     
     func supportUs(_ associatedBonusItemId: String? = nil) {
-//        let bonusConfig = PurchaseConfigurable(
-//            configID: "bonus",
-//            title: "",
-//            statementImage: UIImage(named: "new_icon_3"),
-//            statementLabelText: "DonateToSupportUs",
-//            purchaseButtonTitle: "Donate",
-//            successImage: UIImage(named: "heart_red"),
-//            successLabelText: "Thanks",
-//            successButtonTitle: "YouGotIt",
-//            purchaseFailedText: "PurchaseFailed",
-//            tryAgainButtonTitle: "TryAgain",
-//            successAction: {
-//
-//                self.navigationController?.isNavigationBarHidden = true
-//                self.openBonusDua()
-//            },
-//            purchaseIdForHistory: Constant.purchaseLogId
-//        )
-//
-//        let purchasePresenter = PurchasePresenter(analytics: Analytics.shared,
-//                                                  purchaseProductIdentifiers: [
-//                                                    "com.joode.myPrice099",
-//                                                    "com.joode.myPrice299",
-//                                                    "com.joode.myPrice999"
-//                                                  ],
-//                                                  config: bonusConfig
-//        )
-//
-//        let purchaseController = PurchaseController(presenter: purchasePresenter)
-//        self.navigationController?.pushViewController(purchaseController, animated: true)
-//        self.navigationController?.isNavigationBarHidden = false
+        guard let settingsViewDelegate = settingsViewDelegate else {
+            return
+        }
+        settingsViewDelegate.openDonateProposition()
     }
     
     func openWebPage(_ settingsItem: SettingsItem){
@@ -149,15 +129,15 @@ public final class SettingsView: UIViewController {
     
     func openNotificationPanel() {
 //        let locale = String(Locale.current.identifier.prefix(2))
-//
+
 //        let controlPanel: [ControlPanelSection]?
-//
+
 //        if let panel = Storage.shared.controlPanelDict[locale] {
 //            controlPanel = panel
 //        } else {
 //            controlPanel = Storage.shared.controlPanelDict["en"]
 //        }
-//
+
 //        let notificationScheduler: LocalScheduler?
 //
 //        if let scheduler = Storage.shared.localNotificationDict[locale] {
@@ -169,28 +149,28 @@ public final class SettingsView: UIViewController {
 //        let notificationModule = NotificationKit.NotificationModuleBuilder(
 //            controlPanel: controlPanel,
 //            notificationScheduler: notificationScheduler,
-//            analytics: Analytics.shared
+//            analytics: analytics
 //        )
 //
 //        self.navigationController?.pushViewController(notificationModule.view, animated: true)
     }
     
     func requestReview(_ circumstance: String = "Launch") {
-//        if #available(iOS 10.3, *) {
-//
-//            Analytics.shared.logEvent("Requesting review", properties: [
-//                "circumstance": circumstance,
+        if #available(iOS 10.3, *) {
+            
+            analytics?.logEvent("Requesting review", properties: [
+                "circumstance": circumstance,
 //                "App Open Count": AppHelper.shared.appOpenCount
-//            ])
-//
-//            DispatchQueue.main.async {
-//                SKStoreReviewController.requestReview()
-//            }
-//
-//        } else {
-//            // Fallback on earlier versions
-//            // Try any other 3rd party or manual method here.
-//        }
+            ])
+
+            DispatchQueue.main.async {
+                SKStoreReviewController.requestReview()
+            }
+
+        } else {
+            // Fallback on earlier versions
+            // Try any other 3rd party or manual method here.
+        }
     }
     
 }
