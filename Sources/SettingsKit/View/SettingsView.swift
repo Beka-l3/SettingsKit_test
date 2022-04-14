@@ -3,7 +3,7 @@ import SafariServices
 import StoreKit
 import Foundation
 import DonationKit
-//import NotificationKit
+import NotificationKit
 
 public protocol SettingsViewDelegate: AnyObject {
     func openDonateProposition()
@@ -11,10 +11,13 @@ public protocol SettingsViewDelegate: AnyObject {
 
 
 public final class SettingsView: UIViewController {
-    private var settingsSections: [SettingsSection]
     public var settingsViewDelegate: SettingsViewDelegate?
     
+    private var settingsSections: [SettingsSection]
     private var analytics: SettingsAnalytics?
+    
+    private var notificationControlPanel: [ControlPanelSection]?
+    private var notificationSchedule: LocalScheduler?
     
     private struct Constants {
         static let cellHeight: CGFloat = 81
@@ -37,14 +40,15 @@ public final class SettingsView: UIViewController {
         return tableView
     }()
     
+
     
     
-    
-    
-    
-    init(settingsSections: [SettingsSection], analytics: SettingsAnalytics?) {
+    init(settingsSections: [SettingsSection], analytics: SettingsAnalytics?, controlPanel: [ControlPanelSection]?, localSchedule: LocalScheduler?) {
         self.settingsSections = settingsSections
         self.analytics = analytics
+        
+        self.notificationControlPanel = controlPanel
+        self.notificationSchedule = localSchedule
         
         super.init(nibName: nil, bundle: nil)
     }
@@ -75,6 +79,10 @@ public final class SettingsView: UIViewController {
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -25)
         ])
     }
+    
+    
+    
+    
     
     func reloadData() {
         settingsSections = settingsSections.map { sectionConstant in
@@ -128,31 +136,13 @@ public final class SettingsView: UIViewController {
     }
     
     func openNotificationPanel() {
-//        let locale = String(Locale.current.identifier.prefix(2))
-
-//        let controlPanel: [ControlPanelSection]?
-
-//        if let panel = Storage.shared.controlPanelDict[locale] {
-//            controlPanel = panel
-//        } else {
-//            controlPanel = Storage.shared.controlPanelDict["en"]
-//        }
-
-//        let notificationScheduler: LocalScheduler?
-//
-//        if let scheduler = Storage.shared.localNotificationDict[locale] {
-//            notificationScheduler = scheduler
-//        } else {
-//            notificationScheduler = Storage.shared.localNotificationDict["en"]
-//        }
-//
-//        let notificationModule = NotificationKit.NotificationModuleBuilder(
-//            controlPanel: controlPanel,
-//            notificationScheduler: notificationScheduler,
-//            analytics: analytics
-//        )
-//
-//        self.navigationController?.pushViewController(notificationModule.view, animated: true)
+        let notificationBuilder = NotificationModuleBuilder(
+            controlPanel: notificationControlPanel,
+            notificationScheduler: notificationSchedule,
+            analytics: analytics as? GenericAnalytics
+        )
+        
+        self.navigationController?.pushViewController(notificationBuilder.view, animated: true)
     }
     
     func requestReview(_ circumstance: String = "Launch") {
@@ -160,7 +150,6 @@ public final class SettingsView: UIViewController {
             
             analytics?.logEvent("Requesting review", properties: [
                 "circumstance": circumstance,
-//                "App Open Count": AppHelper.shared.appOpenCount
             ])
 
             DispatchQueue.main.async {
@@ -174,6 +163,10 @@ public final class SettingsView: UIViewController {
     }
     
 }
+
+
+
+
 
 
 extension SettingsView: UITableViewDelegate {
@@ -199,6 +192,9 @@ extension SettingsView: UITableViewDelegate {
         }
     }
 }
+
+
+
 
 
 extension SettingsView: UITableViewDataSource {
